@@ -15,6 +15,8 @@ class Directory_DB:
         else:
             self.start = loc_name
             self.db = {"name":loc_name,
+                       "location":loc_name,
+                       "type": "dir",
                        "content": self.Create_DB(loc_name)}
             #print(self.db)
             print("DB Created")
@@ -32,19 +34,25 @@ class Directory_DB:
     # Recursive function that retrieves all files from location and makes
     # a database
     def __Create_DB_Helper(self, location):
-        db = {}
-        temp_dirs = []
-        temp_files = []
+        fs = []
         if location[-1] == "/":
             location = location[-1]
-        for file in os.listdir(location):
-            if os.path.isdir(location+"/"+file):
-                temp_dirs.append({"name": file,
-                                  "content": self.__Create_DB_Helper(location+"/"+file)})
-            else:
-                temp_files.append(file)
 
-        return {"dirs":temp_dirs, "files": temp_files}
+        files = sorted(os.listdir(location))
+        for file in files:
+            loc = location+"/"+file
+            if os.path.isdir(loc):
+                fs.append({"name": file,
+                           "location": loc,
+                           "type" : "dir",
+                           "content": self.__Create_DB_Helper(loc)})
+            else:
+                fs.append({"name": file,
+                           "location": loc,
+                           "type" : "file",
+                           "content": []})
+
+        return fs
 
     # Function that displays a rough filesystem from database using its
     # helper function
@@ -52,34 +60,26 @@ class Directory_DB:
         if self.db == {}:
             print("No Filesystem to display!")
             return
-        self.__Print_DB_Helper(self.db, 0)
+        self.__Print_DB_Helper(self.db, "", True)
 
-    def __Print_DB_Helper(self, db, lvl):
-        name_indent = ""
-        file_indent = ""
-        last_file_indent = ""
-        spacer = "|   " + "|   "*lvl
-        if lvl == 0:
-            file_indent = "├── "
-            last_file_indent = "└── "
-        if lvl >= 1:
-            file_indent = "|   "*lvl + "├── "
-            last_file_indent = "|   "*lvl + "└── "
-            name_indent = "|   "*(lvl-1) + "├── "
+    def __Print_DB_Helper(self, db, ind, e):
+        new_char = ""
+        if e == False:
+            print(ind + "├── " + db["name"])
+            new_char = "|   "
+        else:
+            print(ind + "└── " + db["name"])
+            if db["type"] == "file":
+                print(ind)
+            new_char = "    "
 
-        print(name_indent + db["name"])
-
-        for item in db["content"]["dirs"]:
-            self.__Print_DB_Helper(item, lvl+1)
-            print(spacer)
-
-        last = len(db["content"]["files"]) - 1
-        for i, item in enumerate(db["content"]["files"]):
-            if i == last:
-                print(last_file_indent + item)
-            else:
-                print(file_indent + item)
-
+        if db["type"] == "dir":
+            last_pos = len(db["content"]) - 1
+            for i, item in enumerate(db["content"]):
+                if i < last_pos:
+                    self.__Print_DB_Helper(item, ind + new_char, False)
+                else:
+                    self.__Print_DB_Helper(item, ind + new_char, True)
 
     # Private Helper Function in charge of checking of the existance of a
     # location
