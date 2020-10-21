@@ -60,15 +60,20 @@ class Directory_DB:
         if self.db == {}:
             print("No Filesystem to display!")
             return
-        self.__Print_DB_Helper(self.db, "", True)
+        print()
+        self.__Print_DB_Helper(self.db, "", True, True)
 
-    def __Print_DB_Helper(self, db, ind, e):
+    def __Print_DB_Helper(self, db, ind, e, f):
         new_char = ""
         if e == False:
             print(ind + "├── " + db["name"])
             new_char = "|   "
         else:
-            print(ind + "└── " + db["name"])
+            if f == True:
+                print(ind + "─── " + db["name"])
+            else:
+                print(ind + "└── " + db["name"])
+
             if db["type"] == "file":
                 print(ind)
             new_char = "    "
@@ -77,9 +82,9 @@ class Directory_DB:
             last_pos = len(db["content"]) - 1
             for i, item in enumerate(db["content"]):
                 if i < last_pos:
-                    self.__Print_DB_Helper(item, ind + new_char, False)
+                    self.__Print_DB_Helper(item, ind + new_char, False, False)
                 else:
-                    self.__Print_DB_Helper(item, ind + new_char, True)
+                    self.__Print_DB_Helper(item, ind + new_char, True, False)
 
     # Private Helper Function in charge of checking of the existance of a
     # location
@@ -90,10 +95,49 @@ class Directory_DB:
         else:
             return True
 
+# Function in charge of creating Unique ID from string
+def ID(s):
+    from hashlib import md5
+    return md5(s.encode("utf-8")).hexdigest()
+
+# Function in charge of turning the initial File Database
+# to a usable and appropriate version for Machine Learning
+def File_DB_to_Data_DB(f_db):
+    db = DB_Helper(f_db)
+    return db
+
+# Recursive Helper function to make new db
+def DB_Helper(db):
+    out = []
+    for item in db["content"]:
+        if item["type"] == "file":
+            actor = item["location"].split("/")[-2]
+            out.append({"_id": ID(item["location"]), "name": item["name"], "location": item["location"], "actor":actor})
+        else:
+            out.extend(DB_Helper(item))
+    return out
+
+# Class in charge of taking a database and turning it into usable data
+# for Machine Learning
+class ML_Data_Prep:
+    def __init__(self, db):
+        self.ML_data = []
+
+# Class that is the center of the algorithm, within this class, voice
+# files are analysed and turned into a series of fetures for Machine
+# Learning
+class Voice_Processing_Unit:
+    def __init__(self):
+        pass
+
 if __name__ == "__main__":
     voice_loc = "speech-emotion-recognition-ravdess-data"
     #voice_loc = "test"
     #voice_loc = "t"
     dbc = Directory_DB(voice_loc)
-    dbc.Print_DB()
+    #dbc.Print_DB()
+
+    data = dbc.db
+    data = File_DB_to_Data_DB(data)
+    print(len(data))
     pass
