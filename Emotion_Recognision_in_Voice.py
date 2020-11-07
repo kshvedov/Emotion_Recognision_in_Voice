@@ -1,4 +1,7 @@
 import os
+import librosa
+import soundfile
+import numpy as np
 from pprint import pprint as pp
 
 # Directory_DB is a class that creates a json DB of names of all files
@@ -19,7 +22,7 @@ class Directory_DB:
                        "type": "dir",
                        "content": self.Create_DB(loc_name)}
             #print(self.db)
-            print("DB Created")
+            print("DB Created\n")
 
     # Function that is in charge of creating the main database if location
     # exists
@@ -121,14 +124,73 @@ def DB_Helper(db):
 # for Machine Learning
 class ML_Data_Prep:
     def __init__(self, db):
+        print("Initialising DB for ML")
+        self.ID_INDX = {}
+        self.INDX_ID = {}
+        self.data = db
         self.ML_data = []
+        self.VPU = Voice_Processing_Unit()
+
+        for i, item in enumerate(self.data):
+            self.INDX_ID[i] = item["_id"]
+            self.ID_INDX[item["_id"]] = i
+        print("Init Complete\n")
+
+    def Process_Voices(self):
+        print("Processing Voices...")
+        for i in self.INDX_ID.keys():
+            print("{:8}ID: {}\n\tNAME: {}\n".format(str(i)+":", self.INDX_ID[i], self.data[i]["name"]))
+            data_out = self.VPU.Process_File(self.INDX_ID[i], self.data[i]["location"])
+
+        print("Processing Complete!")
+        return
 
 # Class that is the center of the algorithm, within this class, voice
 # files are analysed and turned into a series of fetures for Machine
 # Learning
 class Voice_Processing_Unit:
     def __init__(self):
-        pass
+        self.last_ID = ""
+        self.last_location = ""
+        self.last_dat = []
+
+    def Process_File(self, id, loc):
+        self.last_ID = id
+        self.last_location = loc
+        self.last_dat = []
+        print("Loading file...")
+
+        f = soundfile.SoundFile(loc)
+
+        dat = f.read(dtype="float32")
+        sr = f.samplerate
+
+        # Data Extraction
+        stft = np.abs(librosa.stft(dat))
+
+        # Each of these will have a max and mi found for each stretch
+        self.last_dat.append(self.Get_Min_Mean_Max(librosa.feature.mfcc(y=dat, sr=sr, n_mfcc=40).T))
+        self.last_dat.append(self.Get_Min_Mean_Max(librosa.feature.chroma_stft(S=stft, sr=sr).T))
+        self.last_dat.append(self.Get_Min_Mean_Max(librosa.feature.melspectrogram(dat, sr=sr).T))
+
+        # 2-3 other techniques are going to be used for analysis
+            # 1
+            # 2
+            # 3
+
+        f.close()
+        print(self.last_dat)
+        return self.last_dat
+
+    # Can be used to get Min, Mean and Min
+    # Will most likeyl be adjusted to find max and mins within the mean
+    def Get_Min_Mean_Max(self, data):
+        out = []
+        out.append(np.min(data, axis=0))
+        out.append(np.mean(data, axis=0))
+        out.append(np.max(data, axis=0))
+        return out
+
 
 if __name__ == "__main__":
     voice_loc = "speech-emotion-recognition-ravdess-data"
@@ -139,5 +201,8 @@ if __name__ == "__main__":
 
     data = dbc.db
     data = File_DB_to_Data_DB(data)
-    print(len(data))
+    print("Number of files:", len(data))
+    ML_DATA = ML_Data_Prep(data)
+    ML_DATA.Process_Voices()
+
     pass
