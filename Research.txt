@@ -1,0 +1,38 @@
+1) Excluding any rhythm related analisys
+
+2) Mel-frequency cepstral coefficients (MFCCs) -- > https://www.sciencedirect.com/science/article/pii/S1877705812023053
+	librosa.feature.mfcc(y=dat, sr=sr, n_mfcc=40)
+		MFCC is used quite often for more than just sound analisys. Quite often used with voice analisys.
+		Whole study written where is is used for language idetification
+		
+3) Short-time Fourier Transform
+	librosa.feature.chroma_stft(S=stft, sr=sr)
+		Used to identify the frequencies within the audio file
+		Used quite often to idetify key notes or tonalities of a track/music file
+		When averaged, allows a person to find the Key of a track.
+		
+4) Mel Scale
+	librosa.feature.melspectrogram(dat, sr=sr)
+		Humans dont perceive frequencies in a linear fashion. We can easily tell the difference between
+		500 and 1000 Hz, but can bearly tell the difference between 10,000 and 10,500 hz even though the
+		distance btween the two pairs is the same.
+		
+5) Root-mean-squared
+	librosa.feature.rms
+		
+		
+6) Constant-Q
+	librosa.feature.chroma_cqt
+		
+
+7) Computes the chroma variant “Chroma Energy Normalized” (CENS)
+	librosa.feature.chroma_cens
+		
+		
+8) Spectral_Contrast
+	librosa.feature.spectral_contrast
+		
+9) Tonal Centroid Features (tonnetz)
+	librosa.feature.tonnetz
+		
+10)
