@@ -453,10 +453,10 @@ def Find_Optimal_Features(ML_DATA):
     print(final_top)
     print(final_btop)
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout as DO
-from matplotlib.backends.backend_pdf import PdfPages
+#from tensorflow.keras.models import Sequential
+#from tensorflow.keras.layers import Dense
+#from tensorflow.keras.layers import Dropout as DO
+#from matplotlib.backends.backend_pdf import PdfPages
 from pyfiglet import figlet_format as ff
 
 def tf_dense_sequential(data):
@@ -545,4 +545,4 @@ if __name__ == "__main__":
     clf = RFC(1000).fit(X_train, ys_train)
     print("Optimal Feature Score: {:.2f}%".format(clf.score(X_test, ys_test)*100))
 
-    tf_dense_sequential(split_data)
+    #tf_dense_sequential(split_data)
